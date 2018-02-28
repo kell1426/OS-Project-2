@@ -11,23 +11,55 @@
 #include "makeargv.h"
 #include <sys/wait.h>
 
-int main(int argc, char **argv){
+#define MaxCandidates 10
 
-	//Allocate space for MAX_NODES to node pointer
-	struct node* mainnodes=(struct node*)malloc(sizeof(struct node)*MAX_NODES);
+int main(int argc, char **argv){
 
 	if (argc != 2){
 		printf("Usage: %s Program\n", argv[0]);
 		return -1;
 	}
+  char *Candidates[MaxCandidates];
+  int CandidatesVotes[MaxCandidates];
+  size_t bufsize = 1024;
+  char *buf = (char *)malloc(bufsize);
+  int bytes_read = 0;
+  char **strings;
 
-	//call parseInput
-	int num = parseInput(argv[1], mainnodes);
+	FILE *fd = open(/*argv[1] + ".txt"*/ "votes.txt", O_RDONLY);
 
-	//printgraph(mainnodes,num);	//Used for Debugging.
-	//Call execNodes on the root node
-	execNodes(mainnodes);
+  do {
+    bytes_read = getline(&buf, &bufsize, fd);
+    char* p = strchr(buf, '\n');							//Delete trailing \n character.
+	  if(p)
+	  {
+		  *p = 0;
+	  }
+    makeargv(buf, " ", &strings);
+    int i;
+    int match = 0;
+    for(i = 0; i < MaxCandidates; i++)
+    {
+      if(Candidates[i] == NULL) //Candidate not found in array, must be added to array
+      {
+        break;
+      }
+      if(*strings == Candidates[i]) //Match found
+      {
+        match = 1;
+        break;
+      }
+    }
+    if(match == 1)
+    {
+      CandidatesVotes[i]++;
+    }
+    else
+    {
+      Candidates[i] = *strings;
+      CandidatesVotes[i]++;
+    }
 
-
+  } while(bytes_read != 0);
 	return 0;
 }
