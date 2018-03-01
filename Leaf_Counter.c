@@ -1,13 +1,15 @@
 /*kell1426
-*02/21/18
+*02/28/18
 *Daniel Kelly
-*4718021*/
+*4718021
+Leaf_Counter.c*/
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include "makeargv.h"
 
 #define MaxCandidates 10
 
@@ -71,6 +73,7 @@ int main(int argc, char **argv){
 	      CandidatesVotes[i]++;	//Increment this candidates total votes
 	    }
 		}
+		/*Used for Debugging purposes
 		for(i = 0; i < MaxCandidates; i++)
 		{
 			if(Candidates[i][0] == 0)
@@ -78,11 +81,15 @@ int main(int argc, char **argv){
 				break;
 			}
 			printf("Candidate %s has this many votes: %d\n", Candidates[i], CandidatesVotes[i]);
-		}
+		}*/
 
 		char *outputfile = malloc(256);	//Combine path name with output file name
+		char **strings;
+		int numtokens = makeargv(argv[1], "/", &strings);
 		strcpy(outputfile, argv[1]);
-		strcat(outputfile, "/<node_name>.txt");	//Creates "<path>/<node_name>.txt"
+		strcat(outputfile, "/");
+		strcat(outputfile, *(strings + numtokens - 1));
+		strcat(outputfile, ".txt");	//Creates "<path>/<node_name>.txt"
 
 		FILE *outfp = fopen(outputfile, "w");	//Open file in write mode. Overwrite if existing
 		for(i = 0; i < MaxCandidates; i++)
@@ -95,7 +102,7 @@ int main(int argc, char **argv){
 			fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
 		}
 
-		//Print out "argv[1]/last part of directory"
+		printf("%s\n", outputfile); //Print out the path of the output file
 
 		//Free memory
 		free(outputfile);
