@@ -20,9 +20,16 @@ int main(int argc, char **argv){
 
 	char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*));
 	int i;
+	for(i = 0; i < MaxCandidates; i++)
+	{
+		Candidates[i] = (char*)malloc(10 * sizeof(char));
+	}
   int CandidatesVotes[MaxCandidates];
-  size_t bufsize = 50;
-  char *buf = (char *)malloc(bufsize);
+	for(i = 0; i < MaxCandidates; i++)
+	{
+		CandidatesVotes[i] = 0;
+	}
+  char *buf = (char *)malloc(50);
 
 	char *inputfile = malloc(256);	//Compine path name with votes.txt
 	strcpy(inputfile, argv[1]);
@@ -39,11 +46,11 @@ int main(int argc, char **argv){
 	    int match = 0;
 	    for(i = 0; i < MaxCandidates; i++)
 	    {
-	      if(Candidates[i] == NULL) //Candidate not found in array, must be added to array
+	      if(Candidates[i][0] == 0) //Candidate not found in array, must be added to array
 	      {
 	        break;
 	      }
-	      else if(buf == Candidates[i]) //Match found
+	      else if(strcmp(Candidates[i], buf) == 0) //Match found
 	      {
 	        match = 1;
 	        break;
@@ -55,13 +62,22 @@ int main(int argc, char **argv){
 	    }
 	    else
 	    {
-	      strcpy(Candidates[i], buf);	//Does not copy correctly
+				int j = 0;
+				while(buf[j] != 0)
+				{
+					Candidates[i][j] = buf[j];
+					j++;
+				}
 	      CandidatesVotes[i]++;	//Increment this candidates total votes
 	    }
 		}
 		for(i = 0; i < MaxCandidates; i++)
 		{
-			printf("Candidate %s has this many votes: %d", Candidates[i], CandidatesVotes[i]);
+			if(Candidates[i][0] == 0)
+			{
+				break;
+			}
+			printf("Candidate %s has this many votes: %d\n", Candidates[i], CandidatesVotes[i]);
 		}
 
 		char *outputfile = malloc(256);	//Combine path name with output file name
@@ -71,8 +87,9 @@ int main(int argc, char **argv){
 		FILE *outfp = fopen(outputfile, "w");	//Open file in write mode. Overwrite if existing
 		for(i = 0; i < MaxCandidates; i++)
 		{
-			if(Candidates[i] == NULL)
-			{//char *Candidates[MaxCandidates];
+			if(Candidates[i + 1][0] == 0)
+			{
+				fprintf(outfp, "%s:%d\n",Candidates[i], CandidatesVotes[i]);
 				break;
 			}
 			fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
@@ -83,7 +100,11 @@ int main(int argc, char **argv){
 		//Free memory
 		free(outputfile);
 		free(inputfile);
-		free(Candidates);
 		free(buf);
+		for(i = 0; i < MaxCandidates; i++)
+		{
+			free(Candidates[i]);
+		}
+		free(Candidates);
 		return 0;
 }
