@@ -92,7 +92,7 @@ int main(int argc, char **argv){
 		strcat(outputfile, ".txt");	//Creates "<path>/<node_name>.txt"
 
 		FILE *outfp = fopen(outputfile, "w");	//Open file in write mode. Overwrite if existing
-		for(i = 0; i < MaxCandidates; i++)
+		for(i = 0; i < MaxCandidates - 1; i++)
 		{
 			if(Candidates[i + 1][0] == 0)
 			{
