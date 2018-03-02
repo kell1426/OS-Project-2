@@ -22,6 +22,19 @@ int main(int argc, char **argv){
 		printf("Usage: %s Program\n", argv[0]);
 		return -1;
 	}
+
+	int i;
+	char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*));
+	for(i = 0; i < MaxCandidates; i++)
+	{
+		Candidates[i] = (char*)malloc(10 * sizeof(char));
+	}
+	int CandidatesVotes[MaxCandidates];
+	for(i = 0; i < MaxCandidates; i++)
+	{
+		CandidatesVotes[i] = 0;
+	}
+
 	DIR *dir = opendir(argv[1]);
 	struct dirent *entry;
 	int isLeafNode = 0;
@@ -79,20 +92,8 @@ int main(int argc, char **argv){
 
 	if(isLeafNode == 0)
 	{
-		int i;
 		int j;
 		int match;
-		char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*));
-		for(i = 0; i < MaxCandidates; i++)
-		{
-			Candidates[i] = (char*)malloc(10 * sizeof(char));
-		}
-		int CandidatesVotes[MaxCandidates];
-		for(i = 0; i < MaxCandidates; i++)
-		{
-			CandidatesVotes[i] = 0;
-		}
-
 		DIR *dir2 = opendir(argv[1]);
 		while(entry = readdir(dir2))
 		{
@@ -126,13 +127,13 @@ int main(int argc, char **argv){
 						{
 							break;
 						}
-						else if(strcmp(Candidates[j], strings2[0]))
+						else if(strcmp(Candidates[j], strings2[0]) == 0)
 						{
 							match = 1;
 							break;
 						}
 					}
-					if(match = 1)
+					if(match == 1)
 					{
 						int val = atoi(strings2[1]);
 						CandidatesVotes[i] += val;
@@ -147,6 +148,7 @@ int main(int argc, char **argv){
 						}
 						CandidatesVotes[i] = atoi(strings2[1]);
 					}
+					match = 0;
 				}
 			}
 		}
@@ -166,15 +168,15 @@ int main(int argc, char **argv){
 				fprintf(outfp, "%s:%d\n",Candidates[i], CandidatesVotes[i]);
 				break;
 			}
-			//fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
-			fprintf(outfp, "Votes for candidate %d: %d\n", i, CandidatesVotes[i]);
+			fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
+			//fprintf(outfp, "Votes for candidate %d: %d\n", i, CandidatesVotes[i]);
 		}
 
 	}
 
+				
 
 
-		
 
 	return 0;
 }
