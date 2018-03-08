@@ -30,11 +30,13 @@ int main(int argc, char **argv){
 	}
 	else
 	{
+		int devNull = open("/dev/null", 0);
+		dup2(devNull, 1);
 		char *arguments[3];
 		arguments[0] = "./Aggregate_Votes";
 		arguments[1] = argv[1];
 		arguments[2] = NULL;
-		execv("/home/dan/Documents/CSCI4061/Project2/Aggregate_Votes", arguments);
+		execv("./Aggregate_Votes", arguments);
 		printf("Execution error.\n");
 	}
 

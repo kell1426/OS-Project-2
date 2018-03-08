@@ -38,6 +38,11 @@ int main(int argc, char **argv){
 	strcat(inputfile, "/votes.txt");	//Makes "<path>/votes.txt"
 
 	FILE *fp = fopen(inputfile, "r");	//Open file in read only
+	if(fp == NULL)
+	{
+		printf("Not a leaf node.\n");
+		return(1);
+	}
     while(fgets(buf, sizeof(buf), fp) != NULL)
 		{
 			char* p = strchr(buf, '\n');//Delete trailing \n character.
@@ -73,15 +78,6 @@ int main(int argc, char **argv){
 	      CandidatesVotes[i]++;	//Increment this candidates total votes
 	    }
 		}
-		/*Used for Debugging purposes
-		for(i = 0; i < MaxCandidates; i++)
-		{
-			if(Candidates[i][0] == 0)
-			{
-				break;
-			}
-			printf("Candidate %s has this many votes: %d\n", Candidates[i], CandidatesVotes[i]);
-		}*/
 
 		char *outputfile = malloc(256);	//Combine path name with output file name
 		char **strings;
@@ -92,7 +88,7 @@ int main(int argc, char **argv){
 		strcat(outputfile, ".txt");	//Creates "<path>/<node_name>.txt"
 
 		FILE *outfp = fopen(outputfile, "w");	//Open file in write mode. Overwrite if existing
-		for(i = 0; i < MaxCandidates - 1; i++)
+		for(i = 0; i < MaxCandidates; i++)
 		{
 			if(Candidates[i + 1][0] == 0)
 			{

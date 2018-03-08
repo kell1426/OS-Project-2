@@ -42,29 +42,61 @@ int main(int argc, char **argv){
 	{
 		if(entry->d_name[0] != '.')
 		{
-			printf("Filename: %s\n", entry->d_name);
+			//printf("Filename: %s\n", entry->d_name);
 			if(strcmp(entry->d_name, "votes.txt") == 0)
 			{
-				printf("This is a leaf node\n");
+				//printf("This is a leaf node\n");
 				isLeafNode = 1;
 				pid_t pid = fork();
+				if(pid < 0)
+				{
+					printf("Fork error.\n");
+				}
 				if(pid > 0)
 				{
 					wait(NULL);
 				}
 				if(pid == 0)
 				{
+					char *cmd = malloc(256);
+					char path[256];
+					char dest[256];
+					memset(dest, 0, sizeof(dest));
+					pid_t pid = getpid();
+					sprintf(path, "/proc/%d/exe", pid);
+					if(readlink(path, dest, 256) == -1)
+					{
+						perror("Symbolic Link error.\n");
+					}
+					else
+					{
+						strcpy(cmd, dest);
+					}
+					char **strings;
+					char *newcmd = malloc(256);
+					int numOfTokens = makeargv(cmd, "/", &strings);
+					strcpy(newcmd, strings[0]);
+					strcat(newcmd, "/");
+					for(i = 1; i < numOfTokens - 1; i++)
+					{
+						strcat(newcmd, strings[i]);
+						strcat(newcmd, "/");
+					}
+					strcat(newcmd, "Leaf_Counter");
+					free(cmd);
+					int devNull = open("/dev/null", 0);
+					dup2(devNull, 1);
 					char *arguments[3];
 					arguments[0] = "./Leaf_Counter";
 					arguments[1] = argv[1];
 					arguments[2] = NULL;
-					execv("/home/dan/Documents/CSCI4061/Project2/Leaf_Counter", arguments);
+					execv(newcmd, arguments);
 					printf("Execution error.\n");
 				}
 			}
 			else if(entry->d_type == DT_DIR)
 			{
-				printf("This is a non-leaf node\n");
+				//printf("This is a non-leaf node\n");
 				pid_t pid = fork();
 				if(pid > 0)
 				{
@@ -72,6 +104,22 @@ int main(int argc, char **argv){
 				}
 				if(pid == 0)
 				{
+					char *cmd;
+					char path[256];
+					char dest[256];
+					memset(dest, 0, sizeof(dest));
+					pid_t pid = getpid();
+					sprintf(path, "/proc/%d/exe", pid);
+					if(readlink(path, dest, 256) == -1)
+					{
+						perror("Symbolic Link error.\n");
+					}
+					else
+					{
+						strcpy(cmd, dest);
+					}
+					int devNull = open("/dev/null", 0);
+					dup2(devNull, 1);
 					char *arguments[3];
 					arguments[0] = "./Aggregate_Votes";
 					arguments[2] = NULL;
@@ -80,14 +128,14 @@ int main(int argc, char **argv){
 					strcat(append, "/");
 					strcat(append, entry->d_name);
 					arguments[1] = append;
-					execv("/home/dan/Documents/CSCI4061/Project2/Aggregate_Votes", arguments);
+					execv(cmd, arguments);
 					printf("Execution error.\n");
 				}
 			}
 		}
 	}
 	//At this point, all programs should be finished.
-	printf("Done\n");
+	//printf("Done\n");
 	closedir(dir);
 
 	if(isLeafNode == 0)
@@ -150,6 +198,8 @@ int main(int argc, char **argv){
 					}
 					match = 0;
 				}
+				free(filename);
+				free(buf);
 			}
 		}
 		char **strings;
@@ -169,14 +219,15 @@ int main(int argc, char **argv){
 				break;
 			}
 			fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
-			//fprintf(outfp, "Votes for candidate %d: %d\n", i, CandidatesVotes[i]);
 		}
-
+		printf(outputfilename);
+		printf("\n");
+		free(outputfilename);
 	}
-
-				
-
-
-
+	for(i = 0; i < MaxCandidates; i++)
+	{
+		free(Candidates[i]);
+	}
+	free(Candidates);
 	return 0;
 }
