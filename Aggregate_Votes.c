@@ -70,12 +70,14 @@ int main(int argc, char **argv){
 					}
 					else
 					{
+
 						strcpy(cmd, dest);
 					}
 					char **strings;
 					char *newcmd = malloc(256);
 					int numOfTokens = makeargv(cmd, "/", &strings);
-					strcpy(newcmd, strings[0]);
+					strcpy(newcmd, "/");
+					strcat(newcmd, strings[0]);
 					strcat(newcmd, "/");
 					for(i = 1; i < numOfTokens - 1; i++)
 					{
@@ -98,13 +100,17 @@ int main(int argc, char **argv){
 			{
 				//printf("This is a non-leaf node\n");
 				pid_t pid = fork();
+				if(pid < 0)
+				{
+					printf("Fork Error.\n");
+				}
 				if(pid > 0)
 				{
 					wait(NULL);
 				}
 				if(pid == 0)
 				{
-					char *cmd;
+					char *cmd = malloc(256);
 					char path[256];
 					char dest[256];
 					memset(dest, 0, sizeof(dest));
