@@ -171,10 +171,11 @@ int main(int argc, char **argv){
 				char **strings;
 				int numOfCandidates = makeargv(buf, ",", &strings); //Break up the line on the commas
 				match = 0;
-				for(i = 0; i < numOfCandidates; i++) //Aggregate the votes here. If new candidate, add to array. If match, add the votes in.
+				int a = 0;
+				for(a = 0; a < numOfCandidates; a++) //Aggregate the votes here. If new candidate, add to array. If match, add the votes in.
 				{
 					char **strings2;
-					int num = makeargv(strings[i], ":", &strings2);
+					int num = makeargv(strings[a], ":", &strings2);
 					for(j = 0; j < MaxCandidates; j++)
 					{
 						if(Candidates[j][0] == 0)
@@ -190,17 +191,17 @@ int main(int argc, char **argv){
 					if(match == 1)
 					{
 						int val = atoi(strings2[1]);
-						CandidatesVotes[i] += val;
+						CandidatesVotes[j] += val;
 					}
 					else
 					{
 						int k = 0;
 						while(strings2[0][k] != 0)
 						{
-							Candidates[i][k] = strings2[0][k];
+							Candidates[j][k] = strings2[0][k];
 							k++;
 						}
-						CandidatesVotes[i] = atoi(strings2[1]);
+						CandidatesVotes[j] = atoi(strings2[1]);
 					}
 					match = 0;
 				}

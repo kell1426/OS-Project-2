@@ -32,7 +32,6 @@ int main(int argc, char **argv){
 		CandidatesVotes[i] = 0;
 	}
   char *buf = (char *)malloc(50);	//Allocate memory to store a vote
-
 	char *inputfile = malloc(256);	//Compine path name with votes.txt
 	strcpy(inputfile, argv[1]);
 	strcat(inputfile, "/votes.txt");	//Makes "<path>/votes.txt"
@@ -45,6 +44,8 @@ int main(int argc, char **argv){
 	}
     while(fgets(buf, sizeof(buf), fp) != NULL)	//Read vote from file until EOF
 		{
+			if(strcmp(buf, "\n") != 0)
+			{
 			char* p = strchr(buf, '\n');//Delete trailing \n character.
 		  if(p)
 		  {
@@ -78,6 +79,7 @@ int main(int argc, char **argv){
 	      CandidatesVotes[i]++;	//Increment this candidates total votes
 	    }
 		}
+	}
 
 		char *outputfile = malloc(256);	//Combine path name with output file name
 		char **strings;
