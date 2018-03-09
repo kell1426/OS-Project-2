@@ -1,5 +1,5 @@
 /*kell1426
-*02/28/18
+*03/08/18
 *Daniel Kelly
 *4718021
 Aggregate_Votes.c*/
@@ -19,12 +19,12 @@ Aggregate_Votes.c*/
 int main(int argc, char **argv){
 
 	if (argc != 2){
-		printf("Usage: %s Program\n", argv[0]);
+		printf("Program requires 2 arguments. Command and path.\n");
 		return -1;
 	}
 
 	int i;
-	char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*));
+	char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*)); //Setup Candidate name and vote arrays
 	for(i = 0; i < MaxCandidates; i++)
 	{
 		Candidates[i] = (char*)malloc(10 * sizeof(char));
@@ -35,28 +35,26 @@ int main(int argc, char **argv){
 		CandidatesVotes[i] = 0;
 	}
 
-	DIR *dir = opendir(argv[1]);
+	DIR *dir = opendir(argv[1]);	//Open directory of passed atgument
 	struct dirent *entry;
 	int isLeafNode = 0;
-	while(entry = readdir(dir))
+	while(entry = readdir(dir))	//Read the directory
 	{
-		if(entry->d_name[0] != '.')
+		if(entry->d_name[0] != '.')	//Skip the '.' and '..' directories
 		{
-			//printf("Filename: %s\n", entry->d_name);
-			if(strcmp(entry->d_name, "votes.txt") == 0)
+			if(strcmp(entry->d_name, "votes.txt") == 0)	//If entry is "votes.txt", program is in a leaf node
 			{
-				//printf("This is a leaf node\n");
 				isLeafNode = 1;
 				pid_t pid = fork();
 				if(pid < 0)
 				{
 					printf("Fork error.\n");
 				}
-				if(pid > 0)
+				if(pid > 0)	//Parent waits
 				{
 					wait(NULL);
 				}
-				if(pid == 0)
+				if(pid == 0)	//Child
 				{
 					char *cmd = malloc(256);
 					char path[256];
@@ -64,15 +62,15 @@ int main(int argc, char **argv){
 					memset(dest, 0, sizeof(dest));
 					pid_t pid = getpid();
 					sprintf(path, "/proc/%d/exe", pid);
-					if(readlink(path, dest, 256) == -1)
+					if(readlink(path, dest, 256) == -1) //Read the symbolic link that links this program to its executable location
 					{
 						perror("Symbolic Link error.\n");
 					}
 					else
 					{
-
-						strcpy(cmd, dest);
+						strcpy(cmd, dest);	//copy path of Aggregate_Votes into cmd
 					}
+					//Program needs path of Leaf_Counter, lines 74-85 delete Aggregate_Votes and append Leaf_Counter to the path into newcm
 					char **strings;
 					char *newcmd = malloc(256);
 					int numOfTokens = makeargv(cmd, "/", &strings);
@@ -86,30 +84,33 @@ int main(int argc, char **argv){
 					}
 					strcat(newcmd, "Leaf_Counter");
 					free(cmd);
-					int devNull = open("/dev/null", 0);
+
+					int devNull = open("/dev/null", 0);	//Re-direct childs STDOUT into NULL. Won't write to terminal
 					dup2(devNull, 1);
 					char *arguments[3];
 					arguments[0] = "./Leaf_Counter";
 					arguments[1] = argv[1];
 					arguments[2] = NULL;
-					execv(newcmd, arguments);
+					execv(newcmd, arguments);	//Execute Leaf_Counter on this node
 					printf("Execution error.\n");
 				}
 			}
-			else if(entry->d_type == DT_DIR)
+			else if(entry->d_type == DT_DIR)	//If a directory, this is a non-leaf node
 			{
-				//printf("This is a non-leaf node\n");
 				pid_t pid = fork();
 				if(pid < 0)
 				{
 					printf("Fork Error.\n");
 				}
-				if(pid > 0)
+				if(pid > 0)	//Parent
 				{
 					wait(NULL);
 				}
 				if(pid == 0)
 				{
+					//Child code similar to above. Read the symbolic link of the Aggregate_Votes executable and copy this path into cmd
+					//Append the directory entry name to the path passed to the program in argv[1]
+					//Execute Aggregate_Voteson this sub-directory in depth first manner
 					char *cmd = malloc(256);
 					char path[256];
 					char dest[256];
@@ -141,17 +142,16 @@ int main(int argc, char **argv){
 		}
 	}
 	//At this point, all programs should be finished.
-	//printf("Done\n");
 	closedir(dir);
 
-	if(isLeafNode == 0)
+	if(isLeafNode == 0)	//If this node is a non-leaf node, we need to create the aggregation result file
 	{
 		int j;
 		int match;
 		DIR *dir2 = opendir(argv[1]);
 		while(entry = readdir(dir2))
 		{
-			if(entry->d_name[0] != '.' && entry->d_type == DT_DIR)
+			if(entry->d_name[0] != '.' && entry->d_type == DT_DIR) //Filter out '.' and '..' directoires and search for the Leaf_Counter output file
 			{
 				char *filename = malloc(256);
 				strcpy(filename, argv[1]);
@@ -160,7 +160,7 @@ int main(int argc, char **argv){
 				strcat(filename, "/");
 				strcat(filename, entry->d_name);
 				strcat(filename, ".txt");
-				FILE *fp = fopen(filename, "r");
+				FILE *fp = fopen(filename, "r");	//Open the found output file
 				char *buf = malloc(256);
 				fgets(buf, 256, fp);
 				char* p = strchr(buf, '\n');//Delete trailing \n character.
@@ -169,9 +169,9 @@ int main(int argc, char **argv){
 					*p = 0;
 				}
 				char **strings;
-				int numOfCandidates = makeargv(buf, ",", &strings);
+				int numOfCandidates = makeargv(buf, ",", &strings); //Break up the line on the commas
 				match = 0;
-				for(i = 0; i < numOfCandidates; i++)
+				for(i = 0; i < numOfCandidates; i++) //Aggregate the votes here. If new candidate, add to array. If match, add the votes in.
 				{
 					char **strings2;
 					int num = makeargv(strings[i], ":", &strings2);
@@ -204,6 +204,7 @@ int main(int argc, char **argv){
 					}
 					match = 0;
 				}
+				//Free some memory of non-needed variables
 				free(filename);
 				free(buf);
 			}
@@ -214,22 +215,24 @@ int main(int argc, char **argv){
 		int numtokens = makeargv(argv[1], "/", &strings);
 		strcat(outputfilename, "/");
 		strcat(outputfilename, *(strings + numtokens - 1));
-		strcat(outputfilename, ".txt");
+		strcat(outputfilename, ".txt");	//Create the output aggregation filename
 
 		FILE *outfp = fopen(outputfilename, "w");	//Open file in write mode. Overwrite if existing
 		for(i = 0; i < MaxCandidates - 1; i++)
 		{
 			if(Candidates[i + 1][0] == 0)
 			{
-				fprintf(outfp, "%s:%d\n",Candidates[i], CandidatesVotes[i]);
+				fprintf(outfp, "%s:%d\n",Candidates[i], CandidatesVotes[i]);	//If no next candidate, print current candidate with newline and break out
 				break;
 			}
 			fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
 		}
+		//Print Aggregation filename to terminal
 		printf(outputfilename);
 		printf("\n");
 		free(outputfilename);
 	}
+	//Free up the Candidate Info
 	for(i = 0; i < MaxCandidates; i++)
 	{
 		free(Candidates[i]);

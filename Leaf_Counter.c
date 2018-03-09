@@ -1,5 +1,5 @@
 /*kell1426
-*02/28/18
+*03/08/18
 *Daniel Kelly
 *4718021
 Leaf_Counter.c*/
@@ -16,22 +16,22 @@ Leaf_Counter.c*/
 int main(int argc, char **argv){
 
 	if (argc != 2){
-		printf("Usage: %s Program\n", argv[0]);
+		printf("Program requires 2 arguments. Command and path.\n");
 		return -1;
 	}
 
-	char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*));
+	char **Candidates = (char**)malloc(MaxCandidates * sizeof(char*)); //Allocate memory to store Candidate Names
 	int i;
 	for(i = 0; i < MaxCandidates; i++)
 	{
 		Candidates[i] = (char*)malloc(10 * sizeof(char));
 	}
-  int CandidatesVotes[MaxCandidates];
+  int CandidatesVotes[MaxCandidates];	//Setup array to store votes for each candidate.
 	for(i = 0; i < MaxCandidates; i++)
 	{
 		CandidatesVotes[i] = 0;
 	}
-  char *buf = (char *)malloc(50);
+  char *buf = (char *)malloc(50);	//Allocate memory to store a vote
 
 	char *inputfile = malloc(256);	//Compine path name with votes.txt
 	strcpy(inputfile, argv[1]);
@@ -40,10 +40,10 @@ int main(int argc, char **argv){
 	FILE *fp = fopen(inputfile, "r");	//Open file in read only
 	if(fp == NULL)
 	{
-		printf("Not a leaf node.\n");
+		printf("Not a leaf node.\n");	//Folder does not contain "votes.txt". So it is not a leaf node.
 		return(1);
 	}
-    while(fgets(buf, sizeof(buf), fp) != NULL)
+    while(fgets(buf, sizeof(buf), fp) != NULL)	//Read vote from file until EOF
 		{
 			char* p = strchr(buf, '\n');//Delete trailing \n character.
 		  if(p)
@@ -72,7 +72,7 @@ int main(int argc, char **argv){
 				int j = 0;
 				while(buf[j] != 0)
 				{
-					Candidates[i][j] = buf[j];
+					Candidates[i][j] = buf[j];	//Store this Candidate into array
 					j++;
 				}
 	      CandidatesVotes[i]++;	//Increment this candidates total votes
@@ -90,9 +90,9 @@ int main(int argc, char **argv){
 		FILE *outfp = fopen(outputfile, "w");	//Open file in write mode. Overwrite if existing
 		for(i = 0; i < MaxCandidates; i++)
 		{
-			if(Candidates[i + 1][0] == 0)
+			if(Candidates[i + 1][0] == 0)	//If the next candidate is null
 			{
-				fprintf(outfp, "%s:%d\n",Candidates[i], CandidatesVotes[i]);
+				fprintf(outfp, "%s:%d\n",Candidates[i], CandidatesVotes[i]);	//write with newline at the end
 				break;
 			}
 			fprintf(outfp, "%s:%d,",Candidates[i], CandidatesVotes[i]);	//Write Candidate info to file
